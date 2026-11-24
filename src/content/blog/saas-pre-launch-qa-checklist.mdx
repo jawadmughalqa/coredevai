@@ -1,0 +1,66 @@
+export const metadata = {
+  title: "Pre-launch QA checklist for SaaS founders: signup, login and payments",
+  description: "A practical pre-launch testing checklist for SaaS founders: the signup, login, password reset and checkout cases that most often break, and how to test them.",
+  date: "2026-11-23",
+  category: "saas-launch-qa",
+  keywords: ["saas launch checklist", "pre-launch qa checklist", "how to test signup flow", "checkout testing"],
+  readTime: "8 min read",
+};
+
+Most founders test their product the night before launch by clicking through the happy path: sign up, log in, pay with a test card. It works, so they launch.
+
+The bugs that cost signups and payments are rarely on the happy path. They sit in the second click, the wrong input and the phone you did not test on. This checklist covers the three flows that make you money.
+
+## Before you start
+
+- Use **staging**, not production, with a real test card from your payment provider.
+- Test on a **desktop browser, one Android phone and one iPhone**. Safari on iPhone behaves differently enough to need its own pass.
+- Keep a list as you go. Note the device, the steps and what happened.
+
+## 1. Signup
+
+- Sign up with a normal email. Does the confirmation email arrive, and does the link work on a phone?
+- Sign up with an email that has no `@`. Is it rejected **beside the field**, with a message that says what to type?
+- Sign up twice with the same email. Is the message clear, or does it leak whether the account exists?
+- Paste a 1,000-character name. Is it rejected with a length message, or does the app show something unrelated? (In one app we tested, long input returned *"You don't have permission to perform this action."*)
+- Press back after signing up. Do you get a second account or an error page?
+- Check every required field shows that it is required **before** you submit.
+
+## 2. Login and password reset
+
+- Log in with the wrong password five times. What happens on the sixth?
+- Reset the password. Does the link expire? Can it be used twice?
+- Set a new password of **one letter followed by spaces**. This should be rejected. In a real app we tested, it was accepted, and the new password worked.
+- Log in on one device, change the password on another. Is the first session ended?
+- Log out. Is there a confirmation, and does pressing back show private pages?
+
+## 3. Checkout and payments
+
+- Pay with a card that succeeds. Do you get a receipt, and does the plan change at once?
+- Pay with a card that is **declined**. Is the error clear, and can the user try again without starting over?
+- Double-click the Pay button. Are you charged once?
+- Upgrade, then downgrade. Are the amounts right?
+- Enter a coupon that does not exist, then one that has expired.
+- Check every money figure in the app adds up. Two items of 12 and 8 should show 20. (We have seen a total show 8.)
+
+## 4. The checks that catch the rest
+
+- **Huge and negative numbers** in every amount field. A fine entered as 10²⁶ once showed as `1e+26` in an app we tested.
+- **Long text** in every text field. Is it cut off without a warning?
+- **Slow network:** throttle to 3G in your browser's dev tools and submit each form. Do buttons stop double submissions?
+- **Dark mode**, if you support it. Date pickers and selects often stay white.
+- **Long email addresses** in toasts and headers. Do they wrap or spill out of the box?
+
+## 5. Sort what you find
+
+Not every bug blocks a launch. Sort them:
+
+- **High:** money or data is wrong, or a user cannot sign up, log in or pay. Fix before launch.
+- **Medium:** it works but confuses people or needs a workaround. Fix in the first week.
+- **Low:** layout and wording. Fix when you can.
+
+## When to get help
+
+Running this checklist takes most founders a full day, and it is hard to test your own product with fresh eyes. If you would rather hand it over, our [Money Flow Check](/services/saas-launch-testing) covers signup, login and checkout on web, one Android phone and one iPhone, and you get a bug report sorted by severity within 48 hours.
+
+Once the flows pass, keep them passing: [Playwright tests in your CI](/services/playwright-test-automation) catch the same bugs if they come back.

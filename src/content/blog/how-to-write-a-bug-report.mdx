@@ -1,0 +1,90 @@
+export const metadata = {
+  title: "How to write a bug report developers can fix in one read",
+  description: "The bug report format we use on real projects, field by field: title, module, severity, priority, steps, actual and expected result, with real examples.",
+  date: "2026-11-24",
+  category: "bug-reports",
+  keywords: ["how to write a bug report", "bug report template", "severity vs priority", "steps to reproduce"],
+  readTime: "6 min read",
+};
+
+A bug report has one job: let a developer reproduce the problem and fix it without coming back to ask you anything. Every follow-up question costs a day.
+
+This is the format we use in our reports, field by field, with examples from a real 57-bug report on a team management web app.
+
+## The fields
+
+| Field | What goes in it |
+| --- | --- |
+| ID | A number that never changes, like BUG-024 |
+| Title | What is wrong, where, in one line |
+| Module | The part of the app, like *Payroll / Edit Payroll* |
+| Description | Two or three sentences of context |
+| Severity | How bad the impact is: High, Medium, Low |
+| Priority | How soon it should be fixed |
+| Steps to reproduce | Numbered, starting from login |
+| Actual result | What happened |
+| Expected result | What should have happened |
+| Verification | A screenshot, a recording or the network request |
+
+## The title: the problem, not the symptom you felt
+
+Weak: *"Hours wrong."*
+
+Strong: *"System allows assigning more than 24 hours to a member on a single day."*
+
+A good title tells the developer the rule that is broken. They can often guess the fix from the title alone.
+
+## Severity and priority are two different things
+
+Severity is the **impact**. Priority is the **order**. They usually match, but not always.
+
+From the real report:
+
+- **BUG-001**, logout has no confirmation popup: severity **Low**, priority **Medium**. It hurts nobody, but users log out by accident, so it is worth doing soon.
+- **BUG-014**, a fine shows as 1e+26: severity **High**, priority **Medium**. The data is wrong, but nobody enters that number in normal use.
+- **BUG-024**, 31 hours in one day: severity **High**, priority **High**. Wrong data in normal use, in the feature the app exists for.
+
+## Steps: start from login, one action per line
+
+Assume the developer has never seen the screen. Every step is one click or one input:
+
+1. Navigate to the Projects or Assignments section.
+2. Select a team member.
+3. Assign work to that member on the first project for a specific day.
+4. Assign more work to the same member on a second project for the same day.
+5. Make the combined hours exceed 24 (for example, 31).
+6. Save the assignments.
+
+If a step needs data, give the exact value. "Enter a large amount" is vague. "Enter 100000000000000000000000000" is reproducible.
+
+## Actual and expected: two sentences, no opinions
+
+> **Actual:** The system accepts assignments exceeding 24 hours for the same member on a single day.
+>
+> **Expected:** The system should prevent assigning more than 24 hours to the same member on a single day and show a clear validation message.
+
+The expected result is a rule a developer can write a test for. "It should work properly" is not.
+
+## Group bugs that share a cause
+
+In that report, seven bugs showed *"You don't have permission to perform this action"* when the real problem was input validation. We listed them as one **recurring pattern** at the top of the report, so the team could fix the cause once instead of seven times. ([We wrote about all six patterns here](/blog/57-bugs-six-patterns).)
+
+## Open the report with a verdict
+
+Developers read the bugs. Founders read the first paragraph. Start every report with three things:
+
+- **Verdict:** the single biggest risk, in plain words.
+- **Results:** the count by severity.
+- **Fix order:** what to fix first and why.
+
+The verdict on that report was one sentence: *"The biggest risk in this build is numbers that don't add up, not crashes."* A founder knows what to do after reading it.
+
+## A checklist before you send
+
+- Can someone reproduce it from the steps alone?
+- Does the title name the broken rule?
+- Is the expected result something a test could check?
+- Is there a screenshot or recording?
+- Did you check it is not a duplicate of another bug?
+
+Want a report like this on your own product? Our [Money Flow Check](/services/saas-launch-testing) tests signup, login and payments and sends one within 48 hours.

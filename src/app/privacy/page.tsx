@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Badge } from "@/components/ui/badge";
+import { LegalPage } from "@/components/LegalPage";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -10,7 +10,7 @@ const sections = [
   {
     title: "1. Information We Collect",
     body: [
-      "When you fill out our contact form, we collect the information you provide directly — including your name, email address, company name, project details, service interest, and budget range.",
+      "When you fill out our contact form, we collect the information you provide directly — including your name, email address, a link to your product and the details of what you want tested.",
       "When you visit our website, we may automatically collect basic technical information such as your browser type, device type, pages visited, and referring URLs to help us understand how visitors use our site.",
     ],
   },
@@ -24,7 +24,7 @@ const sections = [
   {
     title: "3. Cookies and Analytics",
     body: [
-      "Our website may use cookies or similar technologies to remember your theme preference (light/dark mode) and to understand aggregate site usage. These do not personally identify you.",
+      "Our website may use cookies or similar technologies to understand aggregate site usage. These do not personally identify you.",
     ],
   },
   {
@@ -42,7 +42,7 @@ const sections = [
   {
     title: "6. Your Rights",
     body: [
-      "You may request access to, correction of, or deletion of your personal information at any time by contacting us at hello@coredevai.com. We will respond to all legitimate requests within a reasonable timeframe.",
+      "You may request access to, correction of, or deletion of your personal information at any time by contacting us at contact@coredevai.com. We will respond to all legitimate requests within a reasonable timeframe.",
     ],
   },
   {
@@ -54,37 +54,11 @@ const sections = [
   {
     title: "8. Contact Us",
     body: [
-      "If you have any questions about this privacy policy or how we handle your information, please reach out to us at hello@coredevai.com.",
+      "If you have any questions about this privacy policy or how we handle your information, please reach out to us at contact@coredevai.com.",
     ],
   },
 ];
 
 export default function PrivacyPolicyPage() {
-  return (
-    <section className="pt-32 pb-24 bg-background relative overflow-hidden">
-      <div className="absolute inset-0 grid-pattern opacity-30" />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <Badge variant="primary" className="mb-4 text-xs tracking-wider uppercase font-semibold">
-          Legal
-        </Badge>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-          Privacy <span className="gradient-text">Policy</span>
-        </h1>
-        <p className="text-muted-foreground mb-12">Last updated: June 14, 2026</p>
-
-        <div className="space-y-10">
-          {sections.map(({ title, body }) => (
-            <div key={title}>
-              <h2 className="text-xl font-semibold text-foreground mb-3">{title}</h2>
-              {body.map((p, i) => (
-                <p key={i} className="text-muted-foreground leading-relaxed mb-3">
-                  {p}
-                </p>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  return <LegalPage title="Privacy policy" updated="25 November 2026" sections={sections} />;
 }
