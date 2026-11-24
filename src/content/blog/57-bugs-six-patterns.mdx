@@ -1,0 +1,74 @@
+export const metadata = {
+  title: "57 bugs in one admin app: the 6 patterns behind most of them",
+  description: "What a 57-bug QA report on a team management web app shows: six recurring bug patterns, why they happen and how one fix closes several bugs.",
+  date: "2026-11-25",
+  category: "bug-reports",
+  keywords: ["bug report example", "software testing findings", "form validation bugs", "qa report"],
+  readTime: "7 min read",
+};
+
+We tested a team management web app as Admin, from login and invitations to payroll and settings. The report came to **57 bugs: 19 High, 28 Medium and 10 Low**, plus 9 enhancement suggestions.
+
+Fifty-seven bugs sounds like 57 problems. It is not. Most of them come from a handful of causes, and the fastest way to fix the app is to fix the causes. Here are the six patterns we grouped them into, with the bugs behind each one.
+
+## 1. A permission error that is really a validation error (7 bugs)
+
+Paste 1,000 characters into a Full Name field and submit. The app answers: *"You don't have permission to perform this action."*
+
+The admin does have permission. What happened is that the backend rejected the input, and the front end showed the only error message it had. We saw the same thing on project names, department names, the Extra Hours reason, a 254-character email and a negative department capacity.
+
+**Why it matters:** the user is told the wrong thing, so they cannot fix it. Support tickets follow.
+
+**The one fix:** validate length and format in the form before the request goes out, and map backend validation errors to the field that caused them.
+
+## 2. Required fields without an asterisk (4 bugs)
+
+Email, Designation and Reason were all mandatory and none of them said so. Users find out only after they press Save.
+
+**The one fix:** a shared form field component that adds the marker whenever `required` is set, so no form can forget it again.
+
+## 3. Errors in an alert instead of beside the field (4 bugs)
+
+When a required field was empty, the error showed in a toast at the corner of the screen. In one form the same error showed in the toast *and* under the field.
+
+**The one fix:** one rule for the whole app. Field errors go under the field. Toasts are for things that are not about a field, like a lost connection.
+
+## 4. Extreme numbers accepted, then shown as 1e+26 (4 bugs)
+
+We created a fine of 100,000,000,000,000,000,000,000,000. The app saved it and displayed **1e+26**. Payroll fields did the same: a gross salary shown as `1.00000000000001e+25`, totals overflowing their summary cards.
+
+Nobody will type that number on purpose. But a slipped key, a pasted value or a script can, and payroll is the last place you want it.
+
+**The one fix:** a maximum value on every money field, checked on both client and server, and number formatting that never falls back to scientific notation.
+
+## 5. Long text silently cut off (4 bugs)
+
+Notes and description fields accepted long text, then saved only part of it, with no counter and no warning. The user believes the full note was saved.
+
+**The one fix:** show the limit and a counter, and block the save with a message instead of truncating.
+
+## 6. No "All" option in a filter (2 bugs)
+
+Reports and Fines could only be filtered one member at a time. An admin who wants the whole team has to click through each person.
+
+**The one fix:** a shared filter component that always offers "All".
+
+## The bugs that were not a pattern
+
+Some of the most serious bugs stood alone, and those are the ones that would have hurt most in production:
+
+- **BUG-024:** one person could be assigned **31 hours in a single day** across two projects.
+- **BUG-006:** a project with members on 12 and 8 hours showed a total of **8 hours**, not 20.
+- **BUG-033:** a password reset accepted **one letter followed by spaces**, and the new password worked.
+- **BUG-042:** payroll changes could not be saved at all.
+
+That is why the report's verdict was: *the biggest risk in this build is numbers that don't add up, not crashes.* Nothing crashed. The app just quietly produced wrong capacity, allocation, fine and payroll figures.
+
+## What to take from this for your own app
+
+1. **Test the numbers, not just the screens.** Add two allocations and check the total. Enter a huge number. Enter a negative one.
+2. **Paste long text into every field.** It finds truncation, missing limits and misleading errors in minutes.
+3. **Group bugs by cause before fixing.** Six fixes here close 23 of the 57 bugs.
+4. **Fix High bugs in the money and data paths first.** Layout issues can wait a sprint. Wrong payroll cannot.
+
+If you want this kind of report for your own product before launch, that is what our [Money Flow Check](/services/saas-launch-testing) does for signup, login and payments.

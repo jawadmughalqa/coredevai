@@ -1,127 +1,105 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, User, Calendar } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CTASection } from "@/components/sections/CTASection";
-import { posts, getPostBySlug } from "@/lib/blog-posts";
+import { allPosts, categories, formatDate, loadPost, postSlugs } from "@/lib/posts";
+import { site } from "@/lib/site";
+import { SiteFooter } from "@/components/SiteFooter";
+import { JsonLd } from "@/components/JsonLd";
 
-interface BlogPostPageProps {
-  params: Promise<{ slug: string }>;
-}
-
+export const dynamicParams = false;
 export function generateStaticParams() {
-  return posts.map((post) => ({ slug: post.slug }));
+  return postSlugs().map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
-
-  if (!post) {
-    return { title: "Post Not Found" };
-  }
-
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { meta } = await loadPost((await params).slug);
   return {
-    title: post.title,
-    description: post.description,
+    title: meta.title,
+    description: meta.description,
+    keywords: meta.keywords,
+    authors: [{ name: site.founder, url: `${site.url}/about` }],
+    alternates: { canonical: `/blog/${meta.slug}` },
+    robots: meta.draft ? { index: false, follow: false } : undefined,
+    openGraph: {
+      type: "article",
+      title: meta.title,
+      description: meta.description,
+      url: `${site.url}/blog/${meta.slug}`,
+      publishedTime: meta.date,
+      modifiedTime: meta.updated ?? meta.date,
+      authors: [site.founder],
+    },
   };
 }
 
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
+export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
-
-  if (!post) {
-    notFound();
-  }
+  if (!postSlugs().includes(slug)) notFound();
+  const { meta, Content } = await loadPost(slug);
+  const cat = categories[meta.category];
+  const related = (await allPosts()).filter((p) => p.slug !== slug).slice(0, 3);
+  const url = `${site.url}/blog/${slug}`;
 
   return (
     <>
-      {/* Hero */}
-      <section className="pt-32 pb-12 bg-background relative overflow-hidden">
-        <div className="absolute inset-0 grid-pattern opacity-30" />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to Blog
-          </Link>
-          <Badge variant="primary" className="mb-4 text-xs tracking-wider uppercase font-semibold">
-            {post.category}
-          </Badge>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-6 leading-tight">
-            {post.title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <User className="w-4 h-4" /> {post.author}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4" /> {post.date}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4" /> {post.readTime}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Cover */}
-      <section className="pb-12 bg-background">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`h-64 sm:h-80 rounded-2xl bg-gradient-to-br ${post.gradient} relative overflow-hidden`}>
-            <div className="absolute inset-0 opacity-20 grid-pattern" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white/20 text-8xl sm:text-9xl font-bold">{post.category[0]}</span>
+      <main id="top">
+        <article className="section section--flow" aria-labelledby="post-h">
+          <div className="wrap">
+            <p className="t-small"><a className="link" href="/blog">Blog</a> / <a className="link" href={`/blog/category/${meta.category}`}>{cat?.name}</a></p>
+            <h1 id="post-h" className="measure">{meta.title}</h1>
+            <p className="article-meta">
+              <span>By <a className="link" href="/about">{site.founder}</a></span>
+              <time dateTime={meta.date}>{formatDate(meta.date)}</time>
+              {meta.updated && <span>Updated <time dateTime={meta.updated}>{formatDate(meta.updated)}</time></span>}
+              <span>{meta.readTime}</span>
+            </p>
+            <div className="prose" style={{ marginTop: 48 }}>
+              <Content />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Content */}
-      <section className="pb-24 bg-background">
-        <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-lg text-muted-foreground leading-relaxed mb-8">{post.description}</p>
-          <div className="space-y-6">
-            {post.content.map((block, i) => {
-              if (block.type === "h2") {
-                return (
-                  <h2 key={i} className="text-2xl font-bold tracking-tight text-foreground pt-4">
-                    {block.text}
-                  </h2>
-                );
-              }
-              if (block.type === "ul") {
-                return (
-                  <ul key={i} className="space-y-2 list-disc pl-6 text-muted-foreground leading-relaxed">
-                    {block.items.map((item, j) => (
-                      <li key={j}>{item}</li>
-                    ))}
-                  </ul>
-                );
-              }
-              return (
-                <p key={i} className="text-muted-foreground leading-relaxed">
-                  {block.text}
-                </p>
-              );
-            })}
-          </div>
-
-          <div className="mt-12 pt-8 border-t border-border flex items-center justify-between">
-            <Button asChild variant="outline">
-              <Link href="/blog">
-                <ArrowLeft className="w-4 h-4" /> Back to Blog
-              </Link>
-            </Button>
+            <div className="cta-box">
+              <p>Launching soon? We test signup, login and payments on web, Android and iPhone and send the bug report in 48 hours.</p>
+              <a className="btn btn--primary" href="/contact">{site.mainAction}</a>
+            </div>
+            {related.length > 0 && (
+              <div style={{ marginTop: 64 }}>
+                <h2>More articles</h2>
+                <ul className="post-list">
+                  {related.map((p) => (
+                    <li key={p.slug}><a href={`/blog/${p.slug}`}><h3>{p.title}</h3><p>{p.description}</p></a></li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </article>
-      </section>
-
-      <CTASection />
+      </main>
+      <SiteFooter />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "BlogPosting",
+              headline: meta.title,
+              description: meta.description,
+              datePublished: meta.date,
+              dateModified: meta.updated ?? meta.date,
+              author: { "@type": "Person", name: site.founder, url: `${site.url}/about` },
+              publisher: { "@id": `${site.url}/#org` },
+              mainEntityOfPage: url,
+              url,
+              keywords: meta.keywords?.join(", "),
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Blog", item: `${site.url}/blog` },
+                { "@type": "ListItem", position: 2, name: cat?.name, item: `${site.url}/blog/category/${meta.category}` },
+                { "@type": "ListItem", position: 3, name: meta.title, item: url },
+              ],
+            },
+          ],
+        }}
+      />
     </>
   );
 }

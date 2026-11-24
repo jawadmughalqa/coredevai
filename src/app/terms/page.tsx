@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Badge } from "@/components/ui/badge";
+import { LegalPage } from "@/components/LegalPage";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -16,7 +16,7 @@ const sections = [
   {
     title: "2. Services Described",
     body: [
-      "CoreDevAI is a software development house offering web development, mobile app development, UI/UX design, backend and API development, AI integration, and DevOps services. Information on this website is provided for general informational purposes and does not constitute a binding offer.",
+      "CoreDevAI is a QA testing and test automation studio offering launch testing, Playwright automation, API testing, AI app testing and AI automation. Information on this website is provided for general informational purposes and does not constitute a binding offer.",
       "Specific project terms, deliverables, timelines, and pricing are agreed upon separately in a signed proposal or contract between CoreDevAI and the client.",
     ],
   },
@@ -61,37 +61,11 @@ const sections = [
   {
     title: "9. Contact Us",
     body: [
-      "If you have any questions about these Terms of Service, please contact us at hello@coredevai.com.",
+      "If you have any questions about these Terms of Service, please contact us at contact@coredevai.com.",
     ],
   },
 ];
 
-export default function TermsOfServicePage() {
-  return (
-    <section className="pt-32 pb-24 bg-background relative overflow-hidden">
-      <div className="absolute inset-0 grid-pattern opacity-30" />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <Badge variant="primary" className="mb-4 text-xs tracking-wider uppercase font-semibold">
-          Legal
-        </Badge>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-          Terms of <span className="gradient-text">Service</span>
-        </h1>
-        <p className="text-muted-foreground mb-12">Last updated: June 14, 2026</p>
-
-        <div className="space-y-10">
-          {sections.map(({ title, body }) => (
-            <div key={title}>
-              <h2 className="text-xl font-semibold text-foreground mb-3">{title}</h2>
-              {body.map((p, i) => (
-                <p key={i} className="text-muted-foreground leading-relaxed mb-3">
-                  {p}
-                </p>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+export default function TermsPage() {
+  return <LegalPage title="Terms of service" updated="25 November 2026" sections={sections} />;
 }

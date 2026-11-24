@@ -1,33 +1,22 @@
-import { MetadataRoute } from "next";
-import { posts } from "@/lib/blog-posts";
+import type { MetadataRoute } from "next";
+import { allPosts, categories } from "@/lib/posts";
+import { services, site } from "@/lib/site";
 
 export const dynamic = "force-static";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://coredevai.com";
-  const routes = ["", "/about", "/services", "/portfolio", "/blog", "/contact"];
-  const legalRoutes = ["/privacy", "/terms"];
-
-  const mainEntries = routes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const posts = await allPosts();
+  const pages = ["", "/services", "/work", "/about", "/contact", "/blog"].map((p) => ({
+    url: `${site.url}${p}`,
     changeFrequency: "monthly" as const,
-    priority: route === "" ? 1 : 0.8,
+    priority: p === "" ? 1 : 0.8,
   }));
-
-  const legalEntries = legalRoutes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: "yearly" as const,
-    priority: 0.3,
-  }));
-
-  const blogEntries = posts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
-
-  return [...mainEntries, ...legalEntries, ...blogEntries];
+  return [
+    ...pages,
+    ...services.map((s) => ({ url: `${site.url}/services/${s.slug}`, changeFrequency: "monthly" as const, priority: 0.9 })),
+    ...posts.map((p) => ({ url: `${site.url}/blog/${p.slug}`, lastModified: p.updated ?? p.date, priority: 0.7 })),
+    ...Object.keys(categories).map((c) => ({ url: `${site.url}/blog/category/${c}`, priority: 0.5 })),
+    { url: `${site.url}/privacy`, priority: 0.2 },
+    { url: `${site.url}/terms`, priority: 0.2 },
+  ];
 }
